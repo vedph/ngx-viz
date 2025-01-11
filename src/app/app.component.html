@@ -1,6 +1,24 @@
-<h2>NgxViz</h2>
-<div>
+<article>
+  <h2>NgxViz</h2>
   <div id="container">
     <ngx-viz [code]="code" />
   </div>
-</div>
+  <div>
+    <form [formGroup]="form" (submit)="setCode()">
+      <mat-form-field class="full-width">
+        <mat-label>Code</mat-label>
+        <textarea
+          matInput
+          rows="10"
+          spellcheck="false"
+          [formControl]="codeInput"
+        ></textarea>
+      </mat-form-field>
+      <div>
+        <button mat-flat-button type="submit" [disabled]="form.invalid">
+          set
+        </button>
+      </div>
+    </form>
+  </div>
+</article>

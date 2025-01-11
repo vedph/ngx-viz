@@ -1,6 +1,22 @@
 {
   "name": "@myrmidon/ngx-viz",
   "version": "0.0.1",
+  "description": "Angular viz.js wrapper to render DOT graphs.",
+  "keywords": [
+    "viz.js",
+    "graphviz",
+    "dot",
+    "graph",
+    "angular"
+  ],
+  "homepage": "https://github.com/vedph/ngx-viz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vedph/ngx-viz"
+  },
+  "author": {
+    "name": "Daniele Fusi"
+  },
   "peerDependencies": {
     "@angular/common": "^19.0.0",
     "@angular/core": "^19.0.0"

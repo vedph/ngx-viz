@@ -9,8 +9,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-// declare const Viz: any;
-
 interface Transform {
   x: number;
   y: number;
@@ -23,6 +21,9 @@ interface ViewBox {
   x: number;
   y: number;
 }
+
+const VIZ_URL = 'https://unpkg.com/viz.js@2.1.2/viz.js';
+const RENDER_URL = 'https://unpkg.com/viz.js@2.1.2/full.render.js';
 
 /**
  * Wrapper for Viz.js library to render DOT graphs in Angular.
@@ -64,34 +65,34 @@ export class VizComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
+  public ngOnInit() {
     this.initViz();
   }
 
-  fitToContainer() {
+  // #region Viewport and Zoom
+  public fitToContainer() {
     if (!this.graphContainer || !this._originalViewBox) return;
 
     const container = this.container.nativeElement;
     const containerRect = container.getBoundingClientRect();
-    const { width: svgWidth, height: svgHeight } = this._originalViewBox;
 
-    // Get the bounding box of the graph elements
+    // get the bounding box of the graph elements
     const svg = this.graphContainer.nativeElement.querySelector('svg');
     const graphBoundingBox = svg.getBBox();
 
-    // Account for potential invisible elements by expanding the bounding box
+    // account for potential invisible elements by expanding the bounding box
     const expandedBoundingBox = {
-      x: graphBoundingBox.x - 20, // Adjust as needed
-      y: graphBoundingBox.y - 30, // Adjust as needed
-      width: graphBoundingBox.width + 40, // Adjust as needed
-      height: graphBoundingBox.height + 60, // Increase vertical margin to 60
+      x: graphBoundingBox.x - 20,
+      y: graphBoundingBox.y - 30,
+      width: graphBoundingBox.width + 40,
+      height: graphBoundingBox.height + 60,
     };
 
-    // Calculate padding based on expanded bounding box
-    const paddingX = Math.max(expandedBoundingBox.width / 10, 10); // Adjust as needed
-    const paddingY = Math.max(expandedBoundingBox.height / 10, 10); // Adjust as needed
+    // calculate padding based on expanded bounding box
+    const paddingX = Math.max(expandedBoundingBox.width / 10, 10);
+    const paddingY = Math.max(expandedBoundingBox.height / 10, 10);
 
-    // Calculate scale to fit the graph within the container, considering padding
+    // calculate scale to fit the graph within the container, considering padding
     const scaleX =
       (containerRect.width - 2 * paddingX) /
       (expandedBoundingBox.width + 2 * paddingX);
@@ -100,7 +101,7 @@ export class VizComponent implements OnInit {
       (expandedBoundingBox.height + 2 * paddingY);
     const scale = Math.min(scaleX, scaleY);
 
-    // Calculate center position based on the expanded bounding box
+    // calculate center position based on the expanded bounding box
     const x =
       (containerRect.width -
         (expandedBoundingBox.width + expandedBoundingBox.x) * scale) /
@@ -110,20 +111,20 @@ export class VizComponent implements OnInit {
         (expandedBoundingBox.height + expandedBoundingBox.y) * scale) /
       2;
 
-    // Apply transform with animation
+    // apply transform with animation
     this._transform.set({ x, y, scale });
     this.applyTransform(true);
   }
 
-  zoomIn() {
+  public zoomIn() {
     this.updateZoom(this._transform().scale + this.ZOOM_SPEED);
   }
 
-  zoomOut() {
+  public zoomOut() {
     this.updateZoom(this._transform().scale - this.ZOOM_SPEED);
   }
 
-  resetView() {
+  public resetView() {
     this._transform.set({ x: 0, y: 0, scale: 1 });
     this.applyTransform();
   }
@@ -133,20 +134,21 @@ export class VizComponent implements OnInit {
     this._transform.update((t) => ({ ...t, scale }));
     this.applyTransform();
   }
+  //#endregion
 
-  // Mouse Event Handlers
-  onWheel(event: WheelEvent) {
+  //#region Mouse Events
+  public onWheel(event: WheelEvent) {
     event.preventDefault();
     const delta = event.deltaY > 0 ? -this.ZOOM_SPEED : this.ZOOM_SPEED;
     this.updateZoom(this._transform().scale + delta);
   }
 
-  onMouseDown(event: MouseEvent) {
+  public onMouseDown(event: MouseEvent) {
     this._isDragging = true;
     this._lastPosition = { x: event.clientX, y: event.clientY };
   }
 
-  onMouseMove(event: MouseEvent) {
+  public onMouseMove(event: MouseEvent) {
     if (!this._isDragging) return;
 
     const dx = event.clientX - this._lastPosition.x;
@@ -162,9 +164,10 @@ export class VizComponent implements OnInit {
     this.applyTransform();
   }
 
-  onMouseUp() {
+  public onMouseUp() {
     this._isDragging = false;
   }
+  //#endregion
 
   private applyTransform(animate: boolean = false) {
     if (!this.graphContainer) return;
@@ -177,7 +180,7 @@ export class VizComponent implements OnInit {
 
     if (animate) {
       svg.style.transition = 'transform 0.3s ease-out';
-      // Remove transition after animation
+      // remove transition after animation
       setTimeout(() => {
         svg.style.transition = 'none';
       }, 300);
@@ -190,7 +193,7 @@ export class VizComponent implements OnInit {
   }
 
   private storeOriginalViewBox(svg: SVGElement) {
-    // Get original viewBox or computed size
+    // get original viewBox or computed size
     const viewBox = svg.getAttribute('viewBox');
     if (viewBox) {
       const [x, y, width, height] = viewBox.split(' ').map(Number);
@@ -213,12 +216,12 @@ export class VizComponent implements OnInit {
 
     this._vizPromise = new Promise<void>((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = 'https://unpkg.com/viz.js@2.1.2/viz.js';
+      script.src = VIZ_URL;
       script.onerror = () => reject(new Error('Failed to load Viz.js'));
 
       script.onload = () => {
         const renderScript = document.createElement('script');
-        renderScript.src = 'https://unpkg.com/viz.js@2.1.2/full.render.js';
+        renderScript.src = RENDER_URL;
         renderScript.onerror = () =>
           reject(new Error('Failed to load Viz.js renderer'));
 
@@ -260,13 +263,13 @@ export class VizComponent implements OnInit {
 
       const result = await viz.renderSVGElement(this.code());
 
-      // Clear previous content
+      // clear previous content
       this.graphContainer.nativeElement.innerHTML = '';
 
-      // Add new SVG
+      // add new SVG
       this.graphContainer.nativeElement.appendChild(result);
 
-      // Store original viewBox and prepare SVG
+      // store original viewBox and prepare SVG
       const svg = this.graphContainer.nativeElement.querySelector('svg');
       if (svg) {
         this.storeOriginalViewBox(svg);
@@ -274,7 +277,7 @@ export class VizComponent implements OnInit {
         svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
       }
 
-      // Fit to container after rendering
+      // fit to container after rendering
       this.fitToContainer();
     } catch (e) {
       throw new Error(e instanceof Error ? e.message : 'Error rendering graph');
