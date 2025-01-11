@@ -1,0 +1,60 @@
+.viz-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+}
+.viz-container:active {
+  cursor: grabbing;
+}
+.viz-container > div:first-child {
+  width: 100%;
+  height: 100%;
+}
+.viz-container svg {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+}
+.error-message {
+  color: red;
+  padding: 1rem;
+}
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.zoom-controls {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.zoom-btn {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #ccc;
+  background: white;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.zoom-btn:hover {
+  background: #f0f0f0;
+}
+.fit-btn {
+  padding: 0.25rem;
+}
