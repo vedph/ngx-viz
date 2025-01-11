@@ -1,12 +1,19 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+
+import { VizComponent } from '../../projects/myrmidon/ngx-viz/src/public-api';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [VizComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  title = 'ngx-viz';
+  code = `
+      digraph {
+      A -> B;
+      B -> C;
+      C -> A;
+    }
+`;
 }
