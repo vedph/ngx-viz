@@ -283,4 +283,22 @@ export class VizComponent implements OnInit {
       throw new Error(e instanceof Error ? e.message : 'Error rendering graph');
     }
   }
+
+  /**
+   * Exports the rendered graph as an SVG file.
+   */
+  public exportSVG() {
+    const svgElement = this.graphContainer.nativeElement.querySelector('svg');
+    if (svgElement) {
+      const serializer = new XMLSerializer();
+      const svgString = serializer.serializeToString(svgElement);
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'graph.svg';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  }
 }
