@@ -1,6 +1,6 @@
 {
   "name": "@myrmidon/ngx-viz",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Angular viz.js wrapper to render DOT graphs.",
   "keywords": [
     "viz.js",

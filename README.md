@@ -41,6 +41,14 @@ export class YourComponent {
 
 ## History
 
+### 0.0.3
+
+- 2025-01-12: refactored script loading for Viz to handle the case where AMD module might already be present and prevent duplicate script loading.
+
+### 0.0.2
+
+- 2025-01-12: refactored script loading for Viz.
+
 ### 0.0.1
 
 - 2025-01-11: initial commit.

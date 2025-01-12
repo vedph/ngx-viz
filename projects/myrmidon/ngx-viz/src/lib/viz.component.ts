@@ -6,8 +6,12 @@ import {
   effect,
   signal,
   input,
+  inject,
+  DestroyRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { BehaviorSubject, from, switchMap } from 'rxjs';
 
 interface Transform {
   x: number;
@@ -20,6 +24,14 @@ interface ViewBox {
   height: number;
   x: number;
   y: number;
+}
+
+declare global {
+  interface Window {
+    define: any;
+    requirejs: any;
+    Viz: any;
+  }
 }
 
 const VIZ_URL = 'https://unpkg.com/viz.js@2.1.2/viz.js';
@@ -40,11 +52,15 @@ export class VizComponent implements OnInit {
   private readonly MIN_SCALE = 0.1;
   private readonly MAX_SCALE = 5;
 
+  private readonly destroyRef = inject(DestroyRef);
   private readonly _transform = signal<Transform>({ x: 0, y: 0, scale: 1 });
-  private _vizPromise: Promise<void> | null = null;
+
   private _isDragging = false;
   private _lastPosition = { x: 0, y: 0 };
   private _originalViewBox: ViewBox | null = null;
+  private _vizInstance: any = null;
+  private _vizPromise: Promise<void> | null = null;
+  private _scriptsLoaded = new BehaviorSubject<boolean>(false);
 
   @ViewChild('graphContainer') graphContainer!: ElementRef;
   @ViewChild('container') container!: ElementRef;
@@ -209,31 +225,96 @@ export class VizComponent implements OnInit {
     }
   }
 
-  private initViz(): Promise<void> {
+  private loadScript(url: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      // check if script is already loaded
+      const existingScript = document.querySelector(`script[src="${url}"]`);
+      if (existingScript) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = url;
+      script.async = true;
+      script.onerror = () => reject(new Error(`Failed to load script: ${url}`));
+      script.onload = () => resolve();
+      document.head.appendChild(script);
+    });
+  }
+
+  private async initViz(): Promise<void> {
     if (this._vizPromise) {
       return this._vizPromise;
     }
 
     this._vizPromise = new Promise<void>((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = VIZ_URL;
-      script.onerror = () => reject(new Error('Failed to load Viz.js'));
+      // First, check if Viz is already available
+      if (window.Viz) {
+        resolve();
+        return;
+      }
 
-      script.onload = () => {
-        const renderScript = document.createElement('script');
-        renderScript.src = RENDER_URL;
-        renderScript.onerror = () =>
-          reject(new Error('Failed to load Viz.js renderer'));
+      // Create a temporary AMD environment if none exists
+      const hadAMD = 'define' in window && 'requirejs' in window;
+      let originalDefine: any;
+      let originalRequire: any;
 
-        renderScript.onload = () => {
-          resolve();
+      if (!hadAMD) {
+        // Save original values if they exist
+        originalDefine = window.define;
+        originalRequire = window.requirejs;
+
+        // Create minimal AMD environment
+        window.define = function (factory: () => any) {
+          try {
+            window.Viz = factory();
+          } catch (e) {
+            console.error('Error in Viz.js factory:', e);
+          }
         };
+        window.define.amd = true;
+      }
 
-        document.head.appendChild(renderScript);
-      };
+      // Load Viz.js first
+      this.loadScript(VIZ_URL)
+        .then(() => {
+          // Restore original AMD environment before loading render.js
+          if (!hadAMD) {
+            if (originalDefine) {
+              window.define = originalDefine;
+            } else {
+              delete window.define;
+            }
+            if (originalRequire) {
+              window.requirejs = originalRequire;
+            } else {
+              delete window.requirejs;
+            }
+          }
 
-      document.head.appendChild(script);
+          // Now load the renderer
+          return this.loadScript(RENDER_URL);
+        })
+        .then(() => {
+          if (window.Viz) {
+            resolve();
+          } else {
+            reject(new Error('Viz.js failed to initialize'));
+          }
+        })
+        .catch(reject);
     });
+
+    try {
+      await this._vizPromise;
+      this._scriptsLoaded.next(true);
+    } catch (error) {
+      console.error('Error initializing Viz.js:', error);
+      this.error.set('Failed to initialize Viz.js');
+      this._scriptsLoaded.next(false);
+    }
 
     return this._vizPromise;
   }
@@ -256,12 +337,15 @@ export class VizComponent implements OnInit {
   }
 
   private async renderGraph(): Promise<void> {
-    if (!this.graphContainer) return;
+    if (!this.graphContainer || !window.Viz) return;
 
     try {
-      const viz = new (window as any).Viz();
+      // create a new Viz instance if we don't have one
+      if (!this._vizInstance) {
+        this._vizInstance = new window.Viz();
+      }
 
-      const result = await viz.renderSVGElement(this.code());
+      const result = await this._vizInstance.renderSVGElement(this.code());
 
       // clear previous content
       this.graphContainer.nativeElement.innerHTML = '';
@@ -280,6 +364,14 @@ export class VizComponent implements OnInit {
       // fit to container after rendering
       this.fitToContainer();
     } catch (e) {
+      if (
+        e instanceof Error &&
+        e.message.includes('Worker is already disposed')
+      ) {
+        // if worker is disposed, create a new instance and retry
+        this._vizInstance = new window.Viz();
+        return this.renderGraph();
+      }
       throw new Error(e instanceof Error ? e.message : 'Error rendering graph');
     }
   }
