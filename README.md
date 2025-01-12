@@ -14,7 +14,7 @@ In your component template:
 
 ```html
 <div style="width: 800px; height: 600px;">
-  <ngx-viz-graph [code]="graphCode" />
+  <ngx-viz [code]="graphCode" />
 </div>
 ```
 
