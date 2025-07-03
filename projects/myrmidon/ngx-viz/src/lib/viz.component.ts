@@ -9,7 +9,7 @@ import {
   inject,
   DestroyRef,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, from, switchMap } from 'rxjs';
 
@@ -43,7 +43,7 @@ const RENDER_URL = 'https://unpkg.com/viz.js@2.1.2/full.render.js';
 @Component({
   selector: 'ngx-viz',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './viz.component.html',
   styleUrl: './viz.component.css',
 })

@@ -6,12 +6,16 @@
   (mousemove)="onMouseMove($event)"
   (mouseup)="onMouseUp()"
   (mouseleave)="onMouseUp()"
->
+  >
   <div #graphContainer></div>
-  <div *ngIf="error()" class="error-message">
-    {{ error() }}
-  </div>
-  <div *ngIf="loading()" class="loading">Loading...</div>
+  @if (error()) {
+    <div class="error-message">
+      {{ error() }}
+    </div>
+  }
+  @if (loading()) {
+    <div class="loading">Loading...</div>
+  }
   <div class="zoom-controls">
     <button type="button" (click)="zoomIn()" class="zoom-btn" title="Zoom In">
       +
@@ -24,27 +28,27 @@
       (click)="fitToContainer()"
       class="zoom-btn fit-btn"
       title="Fit to Container"
-    >
+      >
       <svg
         viewBox="0 0 24 24"
         width="14"
         height="14"
         stroke="currentColor"
         fill="none"
-      >
+        >
         <path
           stroke-linecap="round"
           stroke-linejoin="round"
           stroke-width="2"
           d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"
-        />
-      </svg>
-    </button>
-    <button type="button" (click)="resetView()" class="zoom-btn" title="Reset">
-      ↺
-    </button>
-    <button type="button" (click)="exportSVG()" class="zoom-btn" title="Save">
-      💾
-    </button>
+          />
+        </svg>
+      </button>
+      <button type="button" (click)="resetView()" class="zoom-btn" title="Reset">
+        ↺
+      </button>
+      <button type="button" (click)="exportSVG()" class="zoom-btn" title="Save">
+        💾
+      </button>
+    </div>
   </div>
-</div>

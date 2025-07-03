@@ -41,6 +41,10 @@ export class YourComponent {
 
 ## History
 
+### 1.0.0
+
+- 2025-07-03: ⚠️ updated to Angular 20.
+
 ### 0.0.3
 
 - 2025-01-12: refactored script loading for Viz to handle the case where AMD module might already be present and prevent duplicate script loading.
