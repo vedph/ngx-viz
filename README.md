@@ -41,6 +41,8 @@ export class YourComponent {
 
 ## History
 
+- 2025-07-12: updated Angular and packages.
+
 ### 1.0.0
 
 - 2025-07-03: ⚠️ updated to Angular 20.
